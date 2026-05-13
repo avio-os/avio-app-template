@@ -1,3 +1,5 @@
+import 'dart:ui' show Brightness;
+
 import 'package:avio_ui/avio_ui.dart';
 import 'package:flutter/widgets.dart';
 
@@ -28,7 +30,7 @@ class AppHome extends StatelessWidget {
           Text(
             'Avio App Template',
             style: tokens.typography.title.copyWith(
-              color: tokens.colors.text.primary,
+              color: tokens.colors.textPrimary,
             ),
           ),
           SizedBox(height: tokens.spacing.md),
@@ -37,19 +39,21 @@ class AppHome extends StatelessWidget {
             'your app. The avio_ui design system is already wired — try '
             'AvioButton, AvioListItem, AvioDialog, AvioPopover, …',
             style: tokens.typography.body.copyWith(
-              color: tokens.colors.text.secondary,
+              color: tokens.colors.textSecondary,
             ),
           ),
           SizedBox(height: tokens.spacing.lg),
           Row(
             children: [
-              AvioButton.primary(
+              AvioButton(
                 onPressed: () {},
+                variant: AvioButtonVariant.primary,
                 child: const Text('Primary action'),
               ),
               SizedBox(width: tokens.spacing.sm),
-              AvioButton.secondary(
+              AvioButton(
                 onPressed: () {},
+                variant: AvioButtonVariant.secondary,
                 child: const Text('Secondary'),
               ),
             ],
