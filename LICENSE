@@ -1,0 +1,7 @@
+Replace this file with the SPDX license text appropriate for your app
+before the first public release.
+
+Suggested: GPL-3.0-or-later (matches the avio compositor) or MIT for
+permissive apps. The avio-sdk is GPL-compatible.
+
+If unsure, ship as `All Rights Reserved` until you decide.

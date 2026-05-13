@@ -1,0 +1,17 @@
+# Local-dev override for cross-repo SDK work.
+#
+# Copy to `pubspec_overrides.yaml` (gitignored) when you have avio-sdk
+# checked out as a sibling to your app repo:
+#
+#   ~/projects/avio_research/
+#     ├── avio-sdk
+#     └── avio-<your-app>
+#
+# Then `flutter pub get` resolves avio_ui / avio_system against the local
+# checkout instead of the pinned git ref.
+
+dependency_overrides:
+  avio_ui:
+    path: ../avio-sdk/packages/avio_ui
+  avio_system:
+    path: ../avio-sdk/packages/avio_system

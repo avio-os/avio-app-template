@@ -1,0 +1,52 @@
+# Rename `name:` after instantiating from the template; must be snake_case
+# and match `flutter create --project-name`.
+name: avio_app_template
+description: Avio Linux application scaffold.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Avio design system. Pinned to a tag in CI; override locally via
+  # pubspec_overrides.yaml for cross-repo development (see
+  # pubspec_overrides.yaml.example).
+  avio_ui:
+    git:
+      url: https://github.com/avio-os/avio-sdk.git
+      path: packages/avio_ui
+      ref: main
+  avio_system:
+    git:
+      url: https://github.com/avio-os/avio-sdk.git
+      path: packages/avio_system
+      ref: main
+
+  # Common modern Dart stack. Trim anything you don't actually use.
+  hooks_riverpod: ^3.0.0
+  flutter_hooks: ^0.21.3+1
+  riverpod_annotation: ^3.0.0
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.9.0
+  logging: ^1.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.6.0
+  flutter_lints: ^6.0.0
+  riverpod_generator: ^3.0.0
+  riverpod_lint: ^3.0.0
+  freezed: ^3.2.3
+  json_serializable: ^6.10.0
+  custom_lint: ^0.8.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
