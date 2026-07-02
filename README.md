@@ -45,7 +45,7 @@ the same lints, CI, design tokens, and update workflow.
 | `pubspec_overrides.yaml.example` | Local-dev override that points to a sibling `avio-sdk` clone |
 | `analysis_options.yaml` | Strict mode, Avio lint set |
 | `lib/main.dart` | `runApp` wrapped in `AvioTokens` + `AvioToastProvider` |
-| `lib/src/app.dart` | Sample screen, ready to replace |
+| `lib/src/app.dart` | Sample `AvioWindowScaffold` glass screen (sidebar + toolbar + glass components), ready to replace |
 | `test/widget_test.dart` | Smoke test |
 | `.github/workflows/ci.yml` | analyze + test + linux build on every push |
 | `.github/workflows/release.yml` | Tag-driven Flutter Linux build artifact |
