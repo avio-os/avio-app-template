@@ -38,7 +38,7 @@ class _AvioAppState extends State<_AvioApp> {
         child: MaterialApp(
           title: 'Avio App Template',
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(brightness: _brightness, fontFamily: 'Inter'),
+          theme: ThemeData(brightness: _brightness, fontFamily: 'packages/avio_ui/Inter'),
           home: AppHome(
             onBrightnessChanged: (b) => setState(() => _brightness = b),
             onDensityChanged: (d) => setState(() => _density = d),
