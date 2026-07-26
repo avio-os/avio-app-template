@@ -49,8 +49,9 @@ repo under `apps/`; they are scaffolded there, not from this template.)
 | `lib/main.dart` | Composition root — builds services, then `runApp` |
 | `lib/src/app.dart` | Root wrapper: system-appearance monitor, `AvioTokens`, `AvioTheme`, toast host |
 | `lib/src/home_screen.dart` | Sample two-pane screen (sidebar + content), ready to replace |
-| `test/helpers/avio_test_app.dart` | Widget-test harness mirroring the root wrapper |
+| `test/helpers/pump_avio.dart` | Widget-test harness mirroring the root wrapper |
 | `test/widget_test.dart` | Smoke tests for the sample screen |
+| `test/provider_retry_test.dart` | Pins the composition root's no-auto-retry policy |
 | `.github/workflows/ci.yml` | analyze + test + linux build on every push |
 | `.github/workflows/release.yml` | Tag-driven Flutter Linux build artifact |
 | `.gitignore` | Standard Flutter + Dart entries |

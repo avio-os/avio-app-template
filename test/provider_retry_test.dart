@@ -2,7 +2,7 @@
 ///
 /// Riverpod 3 retries a failed provider by default, so an error the UI is
 /// designed to show would stay behind ~10 backoff attempts and the error
-/// surface would never be reached. `lib/main.dart` and [avioTestApp] both pass
+/// surface would never be reached. `lib/main.dart` and [pumpAvio] both pass
 /// `retry: (_, _) => null`; this test fails if either loses it.
 library;
 
@@ -10,7 +10,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'helpers/avio_test_app.dart';
+import 'helpers/pump_avio.dart';
 
 /// Throws an [Exception] rather than an [Error] on purpose: Riverpod's default
 /// retry skips `Error`s, so an `Error` here would prove nothing.
@@ -22,7 +22,7 @@ void main() {
   testWidgets('a failing provider settles on its error instead of retrying', (
     tester,
   ) async {
-    await tester.pumpWidget(avioTestApp(const _ErrorProbe()));
+    await pumpAvio(tester, const _ErrorProbe());
     await tester.pump();
 
     // Settled on the error: with retry enabled the provider would still be

@@ -2,17 +2,17 @@
 /// panes, and the sample action reports back through a toast.
 ///
 /// Replace these with tests for your own screens, but keep the shape — pump
-/// [avioTestApp], drive real widgets, assert on what the user sees.
+/// [pumpAvio], drive real widgets, assert on what the user sees.
 library;
 
 import 'package:avio_app_template/src/home_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'helpers/avio_test_app.dart';
+import 'helpers/pump_avio.dart';
 
 void main() {
   testWidgets('sidebar selection swaps the content pane', (tester) async {
-    await tester.pumpWidget(avioTestApp(const HomeScreen()));
+    await pumpAvio(tester, const HomeScreen());
     await tester.pumpAndSettle();
 
     // Opens on Overview: sidebar row + pane title, and an empty sample list.
@@ -29,7 +29,7 @@ void main() {
   testWidgets('the sample action adds a row and confirms with a toast', (
     tester,
   ) async {
-    await tester.pumpWidget(avioTestApp(const HomeScreen()));
+    await pumpAvio(tester, const HomeScreen());
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Add sample item'));
