@@ -6,6 +6,7 @@ linter:
     prefer_const_constructors: true
     prefer_const_declarations: true
     prefer_final_locals: true
+    prefer_single_quotes: true
     unawaited_futures: true
     require_trailing_commas: true
     use_super_parameters: true

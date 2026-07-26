@@ -1,9 +1,10 @@
 # avio-app-template
 
-GitHub template repository for first-party Avio applications (file browser,
-settings, terminal, calculator, media player, …). Provides a working
-Flutter Linux skeleton wired to the Avio SDK so every new app starts with
-the same lints, CI, design tokens, and update workflow.
+GitHub template repository for standalone Avio applications (calculator,
+media player, notes, …). Provides a working Flutter Linux skeleton wired to
+the Avio SDK so every new app starts with the same lints, CI, design tokens,
+and update workflow. (Apps that ship as part of the OS live in the `avio`
+repo under `apps/`; they are scaffolded there, not from this template.)
 
 ## Use this template
 
@@ -30,7 +31,8 @@ the same lints, CI, design tokens, and update workflow.
                   --description="Avio Calculator" .
    ```
 
-5. Rename `lib/main.dart`'s app class to your app's name.
+5. Rename `AvioTemplateApp` in `lib/src/app.dart` to your app's name, and
+   set the `title:` it passes to `MaterialApp`.
 6. Update `pubspec.yaml` — change `name:` from `avio_app_template` to your
    chosen package name (must match `--project-name` above).
 7. Customise `assets/` and `lib/`.
@@ -44,13 +46,40 @@ the same lints, CI, design tokens, and update workflow.
 | `pubspec.yaml` | Dependencies pinned to `avio-sdk` git ref; lints + dev deps |
 | `pubspec_overrides.yaml.example` | Local-dev override that points to a sibling `avio-sdk` clone |
 | `analysis_options.yaml` | Strict mode, Avio lint set |
-| `lib/main.dart` | `runApp` wrapped in `AvioTokens` + `AvioToastProvider` |
-| `lib/src/app.dart` | Sample `AvioWindowScaffold` glass screen (sidebar + toolbar + glass components), ready to replace |
-| `test/widget_test.dart` | Smoke test |
+| `lib/main.dart` | Composition root — builds services, then `runApp` |
+| `lib/src/app.dart` | Root wrapper: system-appearance monitor, `AvioTokens`, `AvioTheme`, toast host |
+| `lib/src/home_screen.dart` | Sample two-pane screen (sidebar + content), ready to replace |
+| `test/helpers/avio_test_app.dart` | Widget-test harness mirroring the root wrapper |
+| `test/widget_test.dart` | Smoke tests for the sample screen |
 | `.github/workflows/ci.yml` | analyze + test + linux build on every push |
 | `.github/workflows/release.yml` | Tag-driven Flutter Linux build artifact |
 | `.gitignore` | Standard Flutter + Dart entries |
 | `LICENSE` | Placeholder — set to your preferred SPDX before first release |
+
+## Design language — the avio skin
+
+Avio apps are **neutral chrome**: opaque white/black-family surfaces, an ink
+accent, and color only where it carries meaning (the sidebar's category
+wells, status colors, an optional system accent). There is no glass in app
+content — frosted surfaces are compositor chrome, not something apps paint.
+
+- Read every value from `context.tokens` — `.colors`, `.spacing`, `.radius`,
+  `.typography`, `.motion`. No hard-coded colors, no raw spacing numbers.
+  That is what makes light/dark, accent and density changes free.
+- Build from the unified `Avio*` components (`AvioButton`, `AvioSidebar`,
+  `AvioCard`, `AvioListItem`, `AvioEmptyState`, `AvioToast*`, …). Browse
+  `avio-sdk/packages/avio_ui/lib/src/components/` before hand-rolling one.
+- Never use anything named `AvioDesktop*` or `context.avioDesktop`. That is a
+  legacy adapter layer scheduled for deletion.
+- `AvioWindowScaffold` assumes an undecorated window inside the Avio
+  compositor (rounded frame, compositor-glass sidebar). Standalone apps get a
+  normal system title bar, so `lib/src/home_screen.dart` composes its two
+  panes directly — an opaque `bgCanvas` sidebar beside an opaque `bgContent`
+  pane. Both light and dark must look right; check both.
+
+`lib/src/app.dart` follows the system appearance (dark/light and accent) over
+the desktop portal via `avio_system`'s `AvioAppearanceMonitor`. With no portal
+reachable it stays on the light default, so it is safe under any compositor.
 
 ## Cross-repo development (SDK + app)
 
