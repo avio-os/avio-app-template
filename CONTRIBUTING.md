@@ -19,6 +19,7 @@ Triage rubric:
 ## Pull requests
 
 - `flutter analyze --fatal-infos` must pass.
+- `dart run custom_lint` must pass (this is what runs the Riverpod lints).
 - `flutter test` must pass.
 - Widget tests for new screens go in `test/`.
 - Use `AvioTokens.of(context)` for all colors, spacing, motion. Don't

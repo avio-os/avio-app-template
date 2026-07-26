@@ -16,8 +16,5 @@ analyzer:
     strict-casts: true
     strict-inference: true
     strict-raw-types: true
-  errors:
-    invalid_annotation_target: ignore  # freezed
   exclude:
-    - '**/*.freezed.dart'
     - '**/*.g.dart'
