@@ -20,6 +20,9 @@ Widget avioTestApp(
 }) {
   return ProviderScope(
     overrides: overrides,
+    // Mirrors `lib/main.dart`: no automatic provider retry, so a failing
+    // provider surfaces its error here exactly as it would in the app.
+    retry: (_, _) => null,
     child: AvioTokens(
       brightness: brightness,
       child: MaterialApp(
