@@ -1,255 +1,81 @@
-import 'dart:ui' show Brightness;
+import 'dart:async';
 
+import 'package:avio_system/avio_system.dart';
 import 'package:avio_ui/avio_ui.dart';
-import 'package:flutter/material.dart' show Icons;
+import 'package:flutter/material.dart'
+    show Brightness, Material, MaterialApp, MaterialType, ThemeMode;
 import 'package:flutter/widgets.dart';
 
-/// Sample home screen — replace with your app's content.
-///
-/// Demonstrates the Avio glass direction: an [AvioWindowScaffold] with a
-/// frosted [AvioSidebar], a search field, a toolbar, and a content pane built
-/// from `avio_ui` glass components. Everything is wired to design tokens, so
-/// switching brightness or density restyles the whole app.
-class AppHome extends StatefulWidget {
-  const AppHome({
-    required this.onBrightnessChanged,
-    required this.onDensityChanged,
-    super.key,
-  });
+import 'home_screen.dart';
 
-  final ValueChanged<Brightness> onBrightnessChanged;
-  final ValueChanged<AvioDensity> onDensityChanged;
+/// Root of the app — rename to `Avio<YourApp>App` after instantiating the
+/// template.
+///
+/// This is the sanctioned Avio wrapper, in order:
+///
+/// 1. [AvioTokens] — every widget below reads colors, spacing, radius, motion
+///    and typography from `context.tokens`. Nothing hard-codes a value.
+/// 2. [AvioToastProvider] — above the app so toasts float over routes and
+///    dialogs rather than being covered by them.
+/// 3. [MaterialApp] with [AvioTheme.light] / [AvioTheme.dark] — carries the
+///    avio skin into the Material widgets the framework builds for you
+///    (text selection, scrollbars, dialogs) and loads the SDK's fonts.
+/// 4. A transparent [Material] — without a `Material` ancestor, `Text` renders
+///    with the framework's debug yellow underlines.
+///
+/// [AvioAppearanceMonitor] follows the desktop portal's dark/light and
+/// accent-color settings live. When no portal is reachable (plain `flutter run`
+/// on a bare session) it stays on the light default, so this is safe to keep.
+class AvioTemplateApp extends StatefulWidget {
+  /// Creates the root widget.
+  const AvioTemplateApp({super.key});
 
   @override
-  State<AppHome> createState() => _AppHomeState();
+  State<AvioTemplateApp> createState() => _AvioTemplateAppState();
 }
 
-class _AppHomeState extends State<AppHome> {
-  static const _sections = <AvioSidebarSection<String>>[
-    AvioSidebarSection<String>(
-      title: 'General',
-      items: [
-        AvioSidebarItem(
-          value: 'appearance',
-          label: 'Appearance',
-          icon: Icons.palette_outlined,
-        ),
-        AvioSidebarItem(
-          value: 'notifications',
-          label: 'Notifications',
-          icon: Icons.notifications_outlined,
-        ),
-      ],
-    ),
-    AvioSidebarSection<String>(
-      title: 'Workspace',
-      items: [
-        AvioSidebarItem(
-          value: 'layout',
-          label: 'Layout',
-          icon: Icons.grid_view_outlined,
-        ),
-        AvioSidebarItem(
-          value: 'shortcuts',
-          label: 'Shortcuts',
-          icon: Icons.keyboard_outlined,
-        ),
-      ],
-    ),
-    AvioSidebarSection<String>(
-      title: 'System',
-      items: [
-        AvioSidebarItem(
-          value: 'about',
-          label: 'About',
-          icon: Icons.info_outline,
-        ),
-      ],
-    ),
-  ];
+class _AvioTemplateAppState extends State<AvioTemplateApp> {
+  final AvioAppearanceMonitor _appearance = AvioAppearanceMonitor();
 
-  static const _titles = <String, String>{
-    'appearance': 'Appearance',
-    'notifications': 'Notifications',
-    'layout': 'Layout',
-    'shortcuts': 'Shortcuts',
-    'about': 'About',
-  };
+  @override
+  void initState() {
+    super.initState();
+    unawaited(_appearance.start());
+  }
 
-  String _selected = 'appearance';
-  int _viewMode = 0;
-  bool _reduceMotion = false;
-  double _accentStrength = 0.6;
+  @override
+  void dispose() {
+    unawaited(_appearance.dispose());
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final tokens = AvioTokens.of(context);
-
-    return AvioWindowScaffold(
-      title: Text(_titles[_selected] ?? 'Avio App'),
-      searchField: const AvioSearchField(placeholder: 'Search settings'),
-      actions: [
-        AvioSegmentedControl<Brightness>(
-          value: tokens.brightness,
-          onChanged: widget.onBrightnessChanged,
-          showLabels: false,
-          segments: const [
-            AvioSegmentData(
-              value: Brightness.light,
-              label: 'Light',
-              icon: Icon(Icons.light_mode_outlined),
-            ),
-            AvioSegmentData(
-              value: Brightness.dark,
-              label: 'Dark',
-              icon: Icon(Icons.dark_mode_outlined),
-            ),
-          ],
-        ),
-      ],
-      sidebar: AvioSidebar<String>(
-        selected: _selected,
-        onSelected: (v) => setState(() => _selected = v),
-        sections: _sections,
-      ),
-      content: _buildContent(tokens),
-    );
-  }
-
-  Widget _buildContent(AvioTokenData tokens) {
-    return switch (_selected) {
-      'appearance' => _appearancePane(tokens),
-      _ => _placeholderPane(
-          tokens,
-          _titles[_selected] ?? '',
-          'This pane is a placeholder. Build it from avio_ui components.',
-        ),
-    };
-  }
-
-  Widget _appearancePane(AvioTokenData tokens) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // The star: a frosted glass card showcasing components on glass.
-        AvioGlassSurface(
-          tier: AvioGlassTier.elevated,
-          borderRadius: tokens.radius.borderRadiusLg,
-          padding: EdgeInsets.all(tokens.spacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Liquid glass', style: tokens.typography.title),
-              SizedBox(height: tokens.spacing.xs),
-              Text(
-                'Components adopt the frosted panel automatically when placed '
-                'on an AvioGlassSurface — no per-widget styling required.',
-                style: tokens.typography.body,
+    return ValueListenableBuilder<AvioSystemAppearance>(
+      valueListenable: _appearance.notifier,
+      builder: (context, appearance, _) {
+        final isDark = appearance.brightness == Brightness.dark;
+        return AvioTokens(
+          brightness: appearance.brightness,
+          // Null accent means 'follow ink', which is the avio-skin default.
+          accentColor: appearance.accentColor,
+          // Above the MaterialApp, so toasts float over routes and dialogs
+          // instead of being covered by whatever the app pushes next.
+          child: AvioToastProvider(
+            child: MaterialApp(
+              title: 'Avio App Template',
+              debugShowCheckedModeBanner: false,
+              theme: AvioTheme.light,
+              darkTheme: AvioTheme.dark,
+              themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+              home: const Material(
+                type: MaterialType.transparency,
+                child: HomeScreen(),
               ),
-              SizedBox(height: tokens.spacing.lg),
-              Row(
-                children: [
-                  AvioButton(
-                    onPressed: () {},
-                    child: const Text('Primary action'),
-                  ),
-                  SizedBox(width: tokens.spacing.sm),
-                  AvioButton(
-                    onPressed: () {},
-                    variant: AvioButtonVariant.secondary,
-                    child: const Text('Secondary'),
-                  ),
-                ],
-              ),
-              SizedBox(height: tokens.spacing.lg),
-              _row(
-                tokens,
-                'Reduce motion',
-                AvioToggle(
-                  value: _reduceMotion,
-                  onChanged: (v) => setState(() => _reduceMotion = v),
-                ),
-              ),
-              SizedBox(height: tokens.spacing.md),
-              _row(
-                tokens,
-                'Accent strength',
-                SizedBox(
-                  width: 200,
-                  child: AvioSlider(
-                    value: _accentStrength,
-                    onChanged: (v) => setState(() => _accentStrength = v),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(height: tokens.spacing.lg),
-        // A floating glass toolbar (capture-toolbar chrome).
-        AvioToolbar(
-          children: [
-            AvioSegmentedControl<int>(
-              value: _viewMode,
-              onChanged: (v) => setState(() => _viewMode = v),
-              showLabels: false,
-              segments: const [
-                AvioSegmentData(
-                  value: 0,
-                  label: 'Grid',
-                  icon: Icon(Icons.grid_view),
-                ),
-                AvioSegmentData(
-                  value: 1,
-                  label: 'List',
-                  icon: Icon(Icons.view_list),
-                ),
-              ],
-            ),
-            const AvioToolbarDivider(),
-            AvioIconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.add),
-              tooltip: 'Add',
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _placeholderPane(AvioTokenData tokens, String title, String body) {
-    return AvioPanel(
-      padding: EdgeInsets.all(tokens.spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: tokens.typography.title.copyWith(
-              color: tokens.colors.textPrimary,
             ),
           ),
-          SizedBox(height: tokens.spacing.xs),
-          Text(
-            body,
-            style: tokens.typography.body.copyWith(
-              color: tokens.colors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _row(AvioTokenData tokens, String label, Widget control) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(label, style: tokens.typography.body),
-        ),
-        control,
-      ],
+        );
+      },
     );
   }
 }

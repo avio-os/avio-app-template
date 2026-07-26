@@ -1,50 +1,27 @@
-import 'dart:ui' show Brightness;
-
-import 'package:avio_ui/avio_ui.dart';
-import 'package:flutter/material.dart' show MaterialApp, ThemeData;
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'src/app.dart';
 
+/// Composition root. Keep it tiny: initialise bindings, build the real
+/// services your app needs, override the providers that stand in for them,
+/// then `runApp`. Everything else belongs in `lib/src/`.
+///
+/// Services that must exist before the first frame get a provider that throws
+/// until overridden — `Provider<X>((_) => throw UnimplementedError())` — so
+/// this function and the widget tests are the only two places that supply
+/// them.
 void main() {
-  runApp(const _AvioApp());
-}
-
-class _AvioApp extends StatefulWidget {
-  const _AvioApp();
-
-  @override
-  State<_AvioApp> createState() => _AvioAppState();
-}
-
-class _AvioAppState extends State<_AvioApp> {
-  Brightness _brightness = Brightness.light;
-  AvioDensity _density = AvioDensity.comfort;
-
-  @override
-  Widget build(BuildContext context) {
-    // AvioTokens is the root design-system wrapper. Everything below it
-    // can call AvioTokens.of(context) for colors, motion, spacing, etc.
-    //
-    // Color scheme and density should follow the user's system preference
-    // once the avio_system package exposes a Settings1 client. For now
-    // we default to light / comfort and toggle via Ctrl+Shift+D in
-    // development; production apps subscribe to system settings.
-    return AvioTokens(
-      brightness: _brightness,
-      density: AvioDensityTokens(density: _density),
-      child: AvioToastProvider(
-        position: AvioToastPosition.bottomRight,
-        child: MaterialApp(
-          title: 'Avio App Template',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(brightness: _brightness, fontFamily: 'packages/avio_ui/Inter'),
-          home: AppHome(
-            onBrightnessChanged: (b) => setState(() => _brightness = b),
-            onDensityChanged: (d) => setState(() => _density = d),
-          ),
-        ),
-      ),
-    );
-  }
+  runApp(
+    ProviderScope(
+      // Riverpod 3 retries a failed provider on its own — up to 10 times,
+      // 200ms doubling to a 6.4s cap. A provider whose failure the UI is
+      // designed to show then sits in its loading state for most of a minute
+      // and the error surface never appears, so failing fast is the better
+      // default. Retry is worth having back for genuinely flaky IO; give it to
+      // that provider alone (each takes its own `retry:`) rather than here.
+      retry: (_, _) => null,
+      child: const AvioTemplateApp(),
+    ),
+  );
 }
