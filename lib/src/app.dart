@@ -15,10 +15,12 @@ import 'home_screen.dart';
 ///
 /// 1. [AvioTokens] — every widget below reads colors, spacing, radius, motion
 ///    and typography from `context.tokens`. Nothing hard-codes a value.
-/// 2. [MaterialApp] with [AvioTheme.light] / [AvioTheme.dark] — carries the
+/// 2. [AvioToastProvider] — above the app so toasts float over routes and
+///    dialogs rather than being covered by them.
+/// 3. [MaterialApp] with [AvioTheme.light] / [AvioTheme.dark] — carries the
 ///    avio skin into the Material widgets the framework builds for you
 ///    (text selection, scrollbars, dialogs) and loads the SDK's fonts.
-/// 3. A transparent [Material] — without a `Material` ancestor, `Text` renders
+/// 4. A transparent [Material] — without a `Material` ancestor, `Text` renders
 ///    with the framework's debug yellow underlines.
 ///
 /// [AvioAppearanceMonitor] follows the desktop portal's dark/light and
@@ -57,16 +59,17 @@ class _AvioTemplateAppState extends State<AvioTemplateApp> {
           brightness: appearance.brightness,
           // Null accent means 'follow ink', which is the avio-skin default.
           accentColor: appearance.accentColor,
-          child: MaterialApp(
-            title: 'Avio App Template',
-            debugShowCheckedModeBanner: false,
-            theme: AvioTheme.light,
-            darkTheme: AvioTheme.dark,
-            themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-            home: const Material(
-              type: MaterialType.transparency,
-              child: AvioToastProvider(
-                position: AvioToastPosition.bottomRight,
+          // Above the MaterialApp, so toasts float over routes and dialogs
+          // instead of being covered by whatever the app pushes next.
+          child: AvioToastProvider(
+            child: MaterialApp(
+              title: 'Avio App Template',
+              debugShowCheckedModeBanner: false,
+              theme: AvioTheme.light,
+              darkTheme: AvioTheme.dark,
+              themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
+              home: const Material(
+                type: MaterialType.transparency,
                 child: HomeScreen(),
               ),
             ),
