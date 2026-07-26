@@ -5,12 +5,12 @@
 /// [pumpAvio], drive real widgets, assert on what the user sees.
 library;
 
-import 'package:avio_app_template/src/home_screen.dart';
+import 'package:avio_app_template/features/home/home_screen.dart';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter_test/flutter_test.dart';
 
-import 'helpers/pump_avio.dart';
+import '../../helpers/pump_avio.dart';
 
 void main() {
   avioWidgetTest('tests run as a desktop platform', (tester) async {

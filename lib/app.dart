@@ -6,7 +6,7 @@ import 'package:flutter/material.dart'
     show Brightness, Material, MaterialApp, MaterialType, ThemeMode;
 import 'package:flutter/widgets.dart';
 
-import 'home_screen.dart';
+import 'features/home/home_screen.dart';
 
 /// Root of the app — rename to `Avio<YourApp>App` after instantiating the
 /// template.
