@@ -1,4 +1,5 @@
-/// Shared widget-test harness.
+/// Shared widget-test harness: the desktop-pinned test declaration and the
+/// widget pump that mirrors the app's real ancestors.
 library;
 
 import 'package:avio_ui/avio_ui.dart';
@@ -9,6 +10,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 
+/// Declares a widget test that runs as [TargetPlatform.linux]. Use this
+/// instead of [testWidgets] for anything that renders UI.
+///
+/// Widget tests otherwise run as Android, and the two platforms disagree about
+/// scrolling: on mobile a vertical scroll view adopts the enclosing
+/// [PrimaryScrollController] automatically, on desktop it does not. A
+/// [Scrollbar] pointed at the primary controller therefore finds no attached
+/// position and throws on desktop, while a full suite of Android-shaped tests
+/// stays green. Apps seeded from this template are desktop-only, so the tests
+/// should say so.
+///
+/// This goes through [TargetPlatformVariant] rather than assigning
+/// `debugDefaultTargetPlatformOverride` in the harness, because flutter_test
+/// asserts every foundation debug variable is back to null by the end of the
+/// test *body* — earlier than `addTearDown` runs. A hand-rolled override has
+/// to be undone at the end of each test, which is easy to forget and is
+/// skipped entirely when an expectation throws first. The variant is reset by
+/// the framework inside the same `runTest` call, so it cannot leak.
+void avioWidgetTest(String description, WidgetTesterCallback callback) {
+  testWidgets(
+    description,
+    callback,
+    variant: TargetPlatformVariant.only(TargetPlatform.linux),
+  );
+}
+
 /// Pumps [child] inside the app's sanctioned ancestors — the same stack
 /// `lib/src/app.dart` builds, minus the live appearance monitor — so widget
 /// tests exercise the context production renders with.
@@ -17,6 +44,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// its colors and spacing from an [AvioTokens] ancestor and throws without
 /// one. Pass [overrides] to inject fakes for whatever `main()` injects for
 /// real, and [brightness] to assert a screen in dark mode.
+///
+/// Declare the test with [avioWidgetTest] so it runs as a desktop platform.
 Future<void> pumpAvio(
   WidgetTester tester,
   Widget child, {

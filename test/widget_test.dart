@@ -6,12 +6,21 @@
 library;
 
 import 'package:avio_app_template/src/home_screen.dart';
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter_test/flutter_test.dart';
 
 import 'helpers/pump_avio.dart';
 
 void main() {
-  testWidgets('sidebar selection swaps the content pane', (tester) async {
+  avioWidgetTest('tests run as a desktop platform', (tester) async {
+    // Pins the harness contract. Scroll views and scrollbars behave
+    // differently on mobile, and Android is flutter_test's default — a
+    // desktop-only crash hides behind an Android-shaped suite.
+    expect(defaultTargetPlatform, TargetPlatform.linux);
+  });
+
+  avioWidgetTest('sidebar selection swaps the content pane', (tester) async {
     await pumpAvio(tester, const HomeScreen());
     await tester.pumpAndSettle();
 
@@ -26,7 +35,7 @@ void main() {
     expect(find.text('No items yet'), findsNothing);
   });
 
-  testWidgets('the sample action adds a row and confirms with a toast', (
+  avioWidgetTest('the sample action adds a row and confirms with a toast', (
     tester,
   ) async {
     await pumpAvio(tester, const HomeScreen());

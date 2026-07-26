@@ -19,16 +19,17 @@ final _failingProvider = FutureProvider<String>(
 );
 
 void main() {
-  testWidgets('a failing provider settles on its error instead of retrying', (
-    tester,
-  ) async {
-    await pumpAvio(tester, const _ErrorProbe());
-    await tester.pump();
+  avioWidgetTest(
+    'a failing provider settles on its error instead of retrying',
+    (tester) async {
+      await pumpAvio(tester, const _ErrorProbe());
+      await tester.pump();
 
-    // Settled on the error: with retry enabled the provider would still be
-    // loading here, and a retry timer would outlive the test.
-    expect(find.text('failed'), findsOneWidget);
-  });
+      // Settled on the error: with retry enabled the provider would still be
+      // loading here, and a retry timer would outlive the test.
+      expect(find.text('failed'), findsOneWidget);
+    },
+  );
 }
 
 class _ErrorProbe extends ConsumerWidget {
