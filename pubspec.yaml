@@ -20,12 +20,12 @@ dependencies:
     git:
       url: https://github.com/avio-os/avio-sdk.git
       path: packages/avio_ui
-      ref: main
+      ref: e5b00dfd0932621a5046a6fc39eb0cfb129af0a4
   avio_system:
     git:
       url: https://github.com/avio-os/avio-sdk.git
       path: packages/avio_system
-      ref: main
+      ref: e5b00dfd0932621a5046a6fc39eb0cfb129af0a4
 
   # State management and logging. Riverpod without code generation: write
   # providers by hand, keep their imports in `*_provider.dart` files, and write
