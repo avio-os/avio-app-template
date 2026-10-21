@@ -105,9 +105,10 @@ static void my_application_activate(GApplication* application) {
 
   FlView* view = fl_view_new(project);
   // Under Avio the view clears to transparent, so the glass beneath shows
-  // until the first frame and wherever the app paints nothing.
-  GdkRGBA background_color;
-  gdk_rgba_parse(&background_color, avio ? "#00000000" : "#000000");
+  // until the first frame and wherever the app paints nothing; elsewhere to
+  // the stock opaque black. Set directly: GTK 3's gdk_rgba_parse has no
+  // #rrggbbaa form, so parsing "#00000000" fails and leaves it unset.
+  const GdkRGBA background_color = {0.0, 0.0, 0.0, avio ? 0.0 : 1.0};
   fl_view_set_background_color(view, &background_color);
   gtk_widget_show(GTK_WIDGET(view));
   gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(view));
