@@ -49,7 +49,7 @@ dev_dependencies:
   # needs a code generator, so there is no build_runner step in this template.
   riverpod_lint: ^3.0.0
   custom_lint: ^0.8.0
-  # Parses lib/ for the Avio design rules (test/design_rules_test.dart).
+  # Resolves lib/ for the Avio design rules (test/design_rules_test.dart).
   analyzer: ^8.4.0
 
 flutter:
