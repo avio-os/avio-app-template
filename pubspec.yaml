@@ -54,10 +54,8 @@ dev_dependencies:
 
 flutter:
   # Avio apps draw Avio Symbols (AvioIcon), never Material icons (the design
-  # rules test bans them). avio_ui still declares the Material font, and
-  # Flutter warns on every build when the app disagrees; release builds
-  # tree-shake the unused glyphs away.
-  uses-material-design: true
+  # rules test bans them), so the Material icon font is not bundled.
+  uses-material-design: false
   assets:
     # Flutter fails the build when a declared asset directory is missing, and
     # git does not track empty directories — hence assets/.gitkeep.
