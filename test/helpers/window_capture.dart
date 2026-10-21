@@ -47,18 +47,21 @@ const double _frameRadius = 20;
 /// flutter_test draws every family as its test font until the real one is
 /// loaded.
 Future<void> loadAvioFonts() async {
-  const faces = {
-    AvioFontFamilies.primary: ['fonts/Figtree.ttf', 'fonts/Figtree-Italic.ttf'],
-    'packages/avio_ui/AvioSymbolsRegular': [
-      'assets/fonts/AvioSymbols-Regular.ttf',
+  final faces = {
+    AvioFontFamilies.primary: [
+      'packages/avio_ui/fonts/Figtree.ttf',
+      'packages/avio_ui/fonts/Figtree-Italic.ttf',
     ],
-    'packages/avio_ui/AvioSymbolsBold': ['assets/fonts/AvioSymbols-Bold.ttf'],
-    'packages/avio_ui/AvioSymbolsFill': ['assets/fonts/AvioSymbols-Fill.ttf'],
+    // Every Avio Symbols font, one per ratio bucket and size; the SDK owns
+    // their names.
+    for (final MapEntry(key: family, value: asset)
+        in avioSymbolFontAssets().entries)
+      family: [asset],
   };
   for (final MapEntry(key: family, value: files) in faces.entries) {
     final loader = FontLoader(family);
     for (final file in files) {
-      loader.addFont(rootBundle.load('packages/avio_ui/$file'));
+      loader.addFont(rootBundle.load(file));
     }
     await loader.load();
   }
