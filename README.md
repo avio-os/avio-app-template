@@ -67,15 +67,17 @@ never stays on a replaced component.
      └── avio-app-template    ← this template (don't edit in place)
    ```
 
-4. **Run `flutter create` over the directory** to fill in the Linux
-   platform scaffold. It keeps every file the template already has —
-   `lib/`, `test/` and the Avio-aware `linux/runner/my_application.cc` — and
-   `--empty` keeps it from adding a counter-app test:
+4. **Run `flutter create` over the directory**, with the engine-fork
+   toolchain (see [Toolchain](#toolchain)), to fill in the Linux platform
+   scaffold. It keeps every file the template already has — `lib/`, `test/`
+   and the Avio-aware `linux/runner/my_application.cc` — and `--empty` keeps
+   it from adding a counter-app test:
 
    ```bash
    cd avio-calculator
-   flutter create --empty --platforms=linux --org=dev.avio \
-                  --project-name=avio_calculator .
+   export FLUTTER_ROOT=$(cd ../avio && scripts/flutter-test-harness.sh root)
+   $FLUTTER_ROOT/bin/flutter create --empty --platforms=linux \
+       --org=dev.avio --project-name=avio_calculator .
    ```
 
 5. Rename the app: `name:` in `pubspec.yaml` (the `--project-name` above),
@@ -83,8 +85,9 @@ never stays on a replaced component.
    `linux/runner/my_application.cc`, and `APPLICATION_ID` in
    `linux/CMakeLists.txt` (`dev.avio.calculator`).
 6. Replace the panes in `lib/features/home/` with your own.
-7. `flutter pub get`, then `flutter analyze --fatal-infos` and
-   `flutter test` with the engine-fork toolchain (below).
+7. `$FLUTTER_ROOT/bin/flutter pub get`, then
+   `$FLUTTER_ROOT/bin/flutter analyze --fatal-infos` and
+   `$FLUTTER_ROOT/bin/flutter test`.
 
 ## Toolchain
 

@@ -2,11 +2,13 @@
 
 After clicking "Use this template" on GitHub and cloning locally:
 
-1. **Run flutter create for the Linux scaffold** (it keeps the template's
-   `lib/`, `test/` and `linux/runner/my_application.cc`)
+1. **Run flutter create for the Linux scaffold** with the engine-fork
+   toolchain (it keeps the template's `lib/`, `test/` and
+   `linux/runner/my_application.cc`)
    ```bash
-   flutter create --empty --platforms=linux --org=dev.avio \
-                  --project-name=avio_<yourapp> .
+   export FLUTTER_ROOT=$(cd ../avio && scripts/flutter-test-harness.sh root)
+   $FLUTTER_ROOT/bin/flutter create --empty --platforms=linux \
+       --org=dev.avio --project-name=avio_<yourapp> .
    ```
 
 2. **Rename the app**
@@ -26,7 +28,6 @@ After clicking "Use this template" on GitHub and cloning locally:
 
 6. **First check**, with the engine-fork toolchain
    ```bash
-   export FLUTTER_ROOT=$(cd ../avio && scripts/flutter-test-harness.sh root)
    $FLUTTER_ROOT/bin/flutter pub get
    $FLUTTER_ROOT/bin/flutter analyze --fatal-infos
    $FLUTTER_ROOT/bin/flutter test

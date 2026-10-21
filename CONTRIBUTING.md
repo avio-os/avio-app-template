@@ -32,20 +32,26 @@ token or component you need, add it to avio-sdk.
 
 ## Pull requests
 
-Run the checks with the engine-fork toolchain
-(`export FLUTTER_ROOT=$(cd ../avio && scripts/flutter-test-harness.sh root)`;
-the stock Flutter SDK cannot compile `avio_ui`):
+Run the checks with the engine-fork toolchain; the stock Flutter SDK cannot
+compile `avio_ui`, and a bare `flutter` or `dart` runs whichever SDK is on
+your `PATH`:
 
-- `dart format --set-exit-if-changed lib test` must pass.
-- `flutter analyze --fatal-infos` must pass. Deprecated SDK APIs are errors:
-  migrate to the replacement the analyzer names.
-- `dart run custom_lint` must pass (this is what runs the Riverpod lints).
-- `flutter test` must pass, with no skipped test. It includes the design
-  rules and the window-anatomy captures.
+```bash
+export FLUTTER_ROOT=$(cd ../avio && scripts/flutter-test-harness.sh root)
+```
+
+- `$FLUTTER_ROOT/bin/dart format --set-exit-if-changed lib test` must pass.
+- `$FLUTTER_ROOT/bin/flutter analyze --fatal-infos` must pass. Deprecated
+  SDK APIs are errors: migrate to the replacement the analyzer names.
+- `$FLUTTER_ROOT/bin/dart run custom_lint` must pass (this is what runs the
+  Riverpod lints).
+- `$FLUTTER_ROOT/bin/flutter test` must pass, with no skipped test. It
+  includes the design rules and the window-anatomy captures.
 - New screens get widget tests in `test/` (mirroring `lib/`) and a capture
   in the style of `test/features/home/home_window_test.dart`. Look at the
-  captures (`AVIO_UI_CAPTURE_DIR=<dir> flutter test test/features`) light and
-  dark, at 1x and 2x, before calling a UI change done.
+  captures (`AVIO_UI_CAPTURE_DIR=<dir> $FLUTTER_ROOT/bin/flutter test
+  test/features`) light and dark, at 1x and 2x, before calling a UI change
+  done.
 
 ## Filing bugs
 
