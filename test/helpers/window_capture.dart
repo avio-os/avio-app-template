@@ -68,12 +68,14 @@ Future<void> loadAvioFonts() async {
 }
 
 /// Pumps [home] as the window's content, light or [dark], at
-/// [devicePixelRatio], with the compositor's controls corner published.
+/// [devicePixelRatio], with the compositor's controls corner published and
+/// the "App actions" setting at [appActions].
 Future<void> pumpWindow(
   WidgetTester tester,
   Widget home, {
   required bool dark,
   required double devicePixelRatio,
+  AvioAppActionsPlacement appActions = AvioAppActionsPlacement.contextual,
 }) async {
   final canvas = captureWindowSize + const Offset(_margin * 2, _margin * 2);
   tester.view
@@ -106,6 +108,7 @@ Future<void> pumpWindow(
     brightness: dark ? Brightness.dark : Brightness.light,
     // The glass strength the live session runs at.
     glassStrength: 0.2,
+    appActions: appActions,
   );
   await tester.pumpWidget(
     RepaintBoundary(

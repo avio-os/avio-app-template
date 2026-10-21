@@ -1,6 +1,7 @@
 /// Defends the starter screen's contract: the sidebar navigates between
-/// panes, the toolbar and the empty state add sample items, the sidebar's
-/// search filters them, and every action reports back through a toast.
+/// panes, New and the empty state add sample items, the sidebar's search
+/// filters them, Delete and Clear act at once and offer the rows back, and
+/// the same declared actions move into the toolbar when the person asks.
 ///
 /// Replace these with tests for your own screens, but keep the shape — pump
 /// [pumpAvio], drive real widgets, assert on what the user sees.
@@ -10,6 +11,8 @@ import 'package:avio_app_template/features/home/home_screen.dart';
 import 'package:avio_ui/avio_ui.dart';
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform;
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -36,8 +39,8 @@ void main() {
 
     expect(find.text('Nothing has happened yet'), findsOneWidget);
     expect(find.text('No items yet'), findsNothing);
-    // The toolbar's actions belong to Overview.
-    expect(_toolbarButton('Add sample item'), findsNothing);
+    // New belongs to the app, so it stays beside the search on every pane.
+    expect(actionButton('New sample item'), findsOneWidget);
 
     await tester.tap(find.text('About'));
     await tester.pumpAndSettle();
@@ -56,6 +59,7 @@ void main() {
         highContrast: true,
         reduceTransparency: true,
       ),
+      AvioAppearance(appActions: AvioAppActionsPlacement.toolbar),
     ]) {
       await pumpAvio(tester, const HomeScreen(), appearance: appearance);
       await tester.pumpAndSettle();
@@ -83,38 +87,136 @@ void main() {
     expect(find.text('Added Sample item 1.'), findsNothing);
   });
 
-  avioWidgetTest('the toolbar adds and clears sample items', (tester) async {
+  avioWidgetTest('New stands beside the search and answers Ctrl+N', (
+    tester,
+  ) async {
     await pumpAvio(tester, const HomeScreen());
     await tester.pumpAndSettle();
 
-    // Nothing to clear yet: the clear action is disabled.
-    final clear = _toolbarButton('Clear sample items');
-    expect(tester.widget<AvioIconButton>(clear).onPressed, isNull);
-
-    await tester.tap(_toolbarButton('Add sample item'));
-    await tester.pump();
-    await tester.tap(_toolbarButton('Add sample item'));
+    final add = tester.widget<AvioIconButton>(actionButton('New sample item'));
+    expect(add.tooltip, 'New sample item · Ctrl+N');
+    await tester.tap(actionButton('New sample item'));
     await tester.pump();
     expect(find.text('Sample item 1'), findsOneWidget);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyN);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pump();
     expect(find.text('Sample item 2'), findsOneWidget);
 
-    await tester.tap(_toolbarButton('Clear sample items'));
-    await tester.pump();
+    await tester.pump(const Duration(seconds: 5));
+  });
+
+  avioWidgetTest('Clear acts at once and offers the rows back', (tester) async {
+    await pumpAvio(tester, const HomeScreen());
+    await tester.pumpAndSettle();
+    await _addItems(tester, 2);
+
+    // The page's actions stand in its "…" at the pane title.
+    await tester.tap(actionButton('More'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Clear sample items'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Sample item 1'), findsNothing);
     expect(find.text('No items yet'), findsOneWidget);
-    expect(find.text('Cleared the sample list.'), findsOneWidget);
+    expect(_pill('Cleared 2 sample items'), findsOneWidget);
 
-    await tester.pump(const Duration(seconds: 5));
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(find.text('Sample item 1'), findsOneWidget);
+    expect(find.text('Sample item 2'), findsOneWidget);
+    expect(_pill('Cleared 2 sample items'), findsNothing);
+
+    // Untaken, the offer ends after its ten seconds and the rows are gone.
+    await tester.tap(actionButton('More'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Clear sample items'));
+    await tester.pumpAndSettle();
+    await tester.pump(kAvioUndoVisibleTime);
+    await tester.pumpAndSettle();
+    expect(_pill('Cleared 2 sample items'), findsNothing);
+    expect(find.text('No items yet'), findsOneWidget);
+  });
+
+  avioWidgetTest('a row deletes from its own actions, and Ctrl+Z puts it '
+      'back', (tester) async {
+    await pumpAvio(tester, const HomeScreen());
+    await tester.pumpAndSettle();
+    await _addItems(tester, 2);
+
+    // The row's actions stand on it while the pointer is over it.
+    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
+    addTearDown(mouse.removePointer);
+    await mouse.addPointer(location: Offset.zero);
+    await mouse.moveTo(tester.getCenter(find.text('Sample item 2')));
+    await tester.pumpAndSettle();
+    await tester.tap(actionButton('Delete'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sample item 2'), findsNothing);
+    expect(find.text('Sample item 1'), findsOneWidget);
+    expect(_pill('Deleted “Sample item 2”'), findsOneWidget);
+
+    await tester.sendKeyDownEvent(LogicalKeyboardKey.controlLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyZ);
+    await tester.sendKeyUpEvent(LogicalKeyboardKey.controlLeft);
+    await tester.pumpAndSettle();
+    expect(find.text('Sample item 2'), findsOneWidget);
+  });
+
+  avioWidgetTest('Sort by name is a toggle in the page menu', (tester) async {
+    await pumpAvio(tester, const HomeScreen());
+    await tester.pumpAndSettle();
+    await _addItems(tester, 11);
+
+    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+    expect(top('Sample item 2'), lessThan(top('Sample item 10')));
+
+    await tester.tap(actionButton('More'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Sort by name'));
+    await tester.pumpAndSettle();
+    expect(top('Sample item 10'), lessThan(top('Sample item 2')));
+  });
+
+  avioWidgetTest('in the toolbar placement the same actions lead the '
+      'controls row', (tester) async {
+    await pumpAvio(
+      tester,
+      const HomeScreen(),
+      appearance: const AvioAppearance(
+        appActions: AvioAppActionsPlacement.toolbar,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await _addItems(tester, 1);
+
+    // No "…" at the pane title: Sort and Clear are buttons in the group.
+    expect(actionButton('More'), findsNothing);
+    final toolbar = find.byType(AvioToolbar);
+    for (final label in ['New sample item', 'Sort by name']) {
+      expect(
+        find.descendant(of: toolbar, matching: actionButton(label)),
+        findsOneWidget,
+        reason: '$label leads the controls row',
+      );
+    }
+    await tester.tap(
+      find.descendant(
+        of: toolbar,
+        matching: actionButton('Clear sample items'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(_pill('Cleared 1 sample item'), findsOneWidget);
   });
 
   avioWidgetTest('the sidebar search filters the sample items', (tester) async {
     await pumpAvio(tester, const HomeScreen());
     await tester.pumpAndSettle();
-    for (var i = 0; i < 3; i++) {
-      await tester.tap(_toolbarButton('Add sample item'));
-      await tester.pump();
-    }
-    await tester.pump(const Duration(seconds: 5));
+    await _addItems(tester, 3);
 
     // Searching from another pane brings the results into view.
     await tester.tap(find.text('About'));
@@ -138,6 +240,26 @@ void main() {
   });
 }
 
-Finder _toolbarButton(String tooltip) => find.byWidgetPredicate(
-  (widget) => widget is AvioIconButton && widget.tooltip == tooltip,
+/// The button the SDK draws for the declared action labelled [label] (its
+/// tooltip is the label, then the shortcut).
+Finder actionButton(String label) => find.byWidgetPredicate(
+  (widget) =>
+      widget is AvioIconButton &&
+      (widget.tooltip == label || '${widget.tooltip}'.startsWith('$label ·')),
 );
+
+/// The undo pill saying [message].
+Finder _pill(String message) => find.descendant(
+  of: find.byType(AvioUndoPill),
+  matching: find.textContaining(message, findRichText: true),
+);
+
+/// Adds [count] items with New, then lets their toasts leave.
+Future<void> _addItems(WidgetTester tester, int count) async {
+  for (var i = 0; i < count; i++) {
+    await tester.tap(actionButton('New sample item'));
+    await tester.pump();
+  }
+  await tester.pump(const Duration(seconds: 5));
+  await tester.pumpAndSettle();
+}

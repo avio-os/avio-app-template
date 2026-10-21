@@ -18,10 +18,25 @@ over any older guideline. The rules an app author meets every day:
   chrome-glass window, the compositor's window controls top-right, and the
   controls row every app reserves through `AvioWindowControlsInset`. Build it
   from `AvioWindowScaffold`: an `AvioSidebar` (232 wide, search on top), an
-  `AvioToolbar` of 28 px `AvioIconButton`s in the controls row, an
-  `AvioPaneHeader`, and the body at the 24 px gutter. A single-pane app drops
-  the sidebar. Never hard-code a header height, a controls offset or a
-  sidebar width.
+  `AvioToolbar` in the controls row, an `AvioPaneHeader`, and the body at the
+  24 px gutter. A single-pane app drops the sidebar. Never hard-code a header
+  height, a controls offset or a sidebar width.
+- **Actions are declared, not placed.** Declare what the window can do once,
+  as `AvioAction`s in an `AvioActionHost`: New in `app`, the page's in
+  `page`, a row's in `AvioListRow.actions`. The SDK stands each on what it
+  acts on (New beside the sidebar search, the page's in its "…" at the pane
+  title, a row's on the row), or, when the person picks "App actions: In the
+  toolbar" in Settings, in one group at the start of the controls row. The
+  window controls stand alone; never draw a button for a declared action,
+  and never fill `AvioToolbar.actions`.
+- **Act, then offer it back; never a dialog.** A reversible act happens at
+  once and `AvioUndoHost` offers it back (`AvioUndoOffer`, ten seconds,
+  Ctrl+Z). A decision takes the first rung of the ladder in
+  `DESIGN_LANGUAGE.md` section 9.19 that fits: confirm on the control
+  (`AvioArmedButton`, `AvioConfirmRow`), edit in place (`AvioInlineField`),
+  `AvioPopoverAsk`, a window bar, `AvioInspector`, and only for a question
+  the window cannot go on without, `AvioGuidedScreen.ask` with an
+  `AvioAskReason`. No `showAvioAsk`, `showAvioDialog` or Material dialogs.
 - **No raw colours.** Every colour comes from the tokens: `context.ink`
   (ink-1/2/3, placeholder, divider, hover, selected, pressed, disabled) and
   `context.tokens.colors` (accent, surfaces, status). No `Color(0x…)`, no
@@ -35,7 +50,7 @@ over any older guideline. The rules an app author meets every day:
   at 12, 16, 20 or 24. No `Icons.*`, Cupertino or MDI icons, no `Icon`, no
   `IconData(…)`, no painted glyphs.
 - **Components, not Material widgets.** `AvioButton`, `AvioListRow`,
-  `AvioListGroup`, `AvioEmptyState`, `AvioAsk`, `AvioTextField` … Browse
+  `AvioListGroup`, `AvioEmptyState`, `AvioTextField` … Browse
   `avio-sdk/packages/avio_ui/lib/src/components/` before hand-rolling one, and
   add what is missing to the SDK. `MaterialApp` appears once, in
   `lib/app.dart`.
@@ -136,8 +151,8 @@ on top of it.
 
 Under Avio the runner leaves the window undecorated and transparent, and the
 compositor frames it. Apps the compositor frames seamlessly have the window
-controls floating over the controls row's trailing corner, and the toolbar
-keeps clear of them; other apps get the compositor's title band, and the same
+controls floating over the controls row's trailing corner, and no app action
+ever stands beside them; other apps get the compositor's title band, and the same
 layout runs to the window's edge. Off Avio the runner is Flutter's stock one.
 
 `lib/app.dart` follows the system appearance (light or dark and the Avio
@@ -156,10 +171,10 @@ AVIO_UI_CAPTURE_DIR=/tmp/captures $FLUTTER_ROOT/bin/flutter test test/features/h
 `test/features/home/home_window_test.dart` draws each state with the real
 fonts, over a sky, through the window's glass, and writes the PNGs there. It
 also holds the window to the shared anatomy on every run: the 232 px sidebar,
-the search field and toolbar centred in the controls row, the toolbar ending
-8 px short of the controls, the pane title at the 24 px gutter, Figtree on
-every line and Avio Symbols for every symbol. Add a capture for each new
-screen.
+the search field and New centred in the controls row, the window controls
+standing alone (in the toolbar placement, one action group at the row's
+start), the pane title at the 24 px gutter, Figtree on every line and Avio
+Symbols for every symbol. Add a capture for each new screen.
 
 ## Cross-repo development (SDK + app)
 

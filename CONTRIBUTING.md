@@ -12,6 +12,12 @@ Every change keeps these rules (`test/design_rules_test.dart` checks them on
   `AvioToolbar` and `AvioPaneHeader`, inside the `AppRoot` window surface. No
   per-app chrome, no hard-coded header heights, controls offsets or sidebar
   widths.
+- **Declared actions**: every action is an `AvioAction` in the window's
+  `AvioActionHost` or on its row; nothing in `AvioToolbar.actions`.
+- **No dialogs**: act and offer it back with `AvioUndoHost`, confirm or edit
+  in place, and ask only with `AvioGuidedScreen.ask` and a reason; no
+  `showAvioAsk`, `showAvioDialog`, `AvioDialog`, `AvioDialogHost` or
+  `showGeneralDialog`.
 - **No raw colours**: tokens only (`context.ink`, `context.tokens.colors`).
   No `Color(0x…)`, no `Colors.*`, no `.withValues(alpha:)`/`withOpacity`, no
   `Opacity` for states.
