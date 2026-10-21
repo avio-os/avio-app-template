@@ -119,6 +119,18 @@ void main() {
         'final b = BorderSide(color: edge);',
         'final c = m.Border(top: BorderSide.none);',
       ],
+      'actions': [
+        'final a = AvioToolbar(actions: const []);',
+        'final b = AvioToolbar(actions: [child]);',
+      ],
+      'asks': [
+        'final a = showAvioAsk<void>(context: context, builder: (_) => child);',
+        'final b = showAvioDialog<void>(context: context, builder: (_) => child);',
+        'final c = AvioDialog(child: child);',
+        'final d = AvioDialogHost(child: child);',
+        'final e = AvioDialogHost.show<void>(context: context, builder: (_, _) => child);',
+        'final f = showGeneralDialog<void>(context: context, pageBuilder: (_, _, _) => child);',
+      ],
       'grid': [
         'final a = EdgeInsets.all(10);',
         'final b = EdgeInsets.fromLTRB(16, 6, 16, 8);',
@@ -185,6 +197,27 @@ final j = DecorationImage(image: ResizeImage(photo, height: 48));
 final k = Row(spacing: 8, children: const []);
 final l = SizedBox(width: kAvioPaneGutter);
 final n = BorderSide.none;
+const p = AvioToolbar();
+final q = AvioActionHost(
+  app: [
+    AvioAction(
+      id: 'app.new',
+      label: 'New',
+      scope: AvioActionScope.app,
+      symbol: AvioSymbol.add,
+      onInvoke: go,
+    ),
+  ],
+  child: child,
+);
+final r = AvioGuidedScreen.ask(
+  reason: AvioAskReason.irreversible,
+  mark: AvioSymbol.trash,
+  title: 'Delete 4 notes for good?',
+  onDismiss: go,
+  answers: const [AvioAskAction(label: 'Keep', onPressed: go)],
+);
+final t = AvioUndoHost(child: child);
 class Preferences {
   const Preferences({this.fontSize = 13, this.height = 1});
   final double fontSize;

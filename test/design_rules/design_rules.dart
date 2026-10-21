@@ -2,9 +2,10 @@
 /// syntax.
 ///
 /// The rules are the "Do and do not" of the SDK's `DESIGN_LANGUAGE.md`
-/// (sections 2, 4.4, 5.2, 6 and 14): every colour, type style, symbol, state
-/// wash and hairline comes from the SDK, and every spacing value sits on the
-/// 4 px grid. They match what the analyzer resolves — the class a constructor
+/// (sections 2, 4.4, 5.2, 6, 8.6, 9.19 and 14): every colour, type style,
+/// symbol, state wash and hairline comes from the SDK, every spacing value
+/// sits on the 4 px grid, actions are declared rather than placed, and no
+/// decision is a dialog. They match what the analyzer resolves — the class a constructor
 /// builds, the declaration a name refers to, the static type a method is
 /// called on — so an import prefix, a variable or a re-export cannot hide a
 /// use, comments and strings never trip them, and an app's own
@@ -77,6 +78,18 @@ const Map<String, String> designRules = {
   'grid':
       'space on the 4 px grid (4, 8, 12, 16, 20, 24, 32 …): every padding, '
       'gap and spacing value is a multiple of 4',
+  'actions':
+      'declare actions as AvioActions in an AvioActionHost (New in app, the '
+      "page's in page, a row's in AvioListRow.actions); the SDK places them "
+      'and the window controls stand alone, so never fill '
+      'AvioToolbar.actions',
+  'asks':
+      'take the first rung of the decision ladder that fits: act and offer '
+      'it back (AvioUndo), confirm in place (AvioArmedButton, '
+      'AvioConfirmRow), edit in place (AvioInlineField), AvioPopoverAsk, a '
+      'window bar, AvioInspector, or AvioGuidedScreen.ask with a reason; '
+      'never a dialog (showAvioAsk, showAvioDialog, AvioDialog, '
+      'AvioDialogHost, showGeneralDialog)',
 };
 
 /// What checking one file found.
@@ -171,6 +184,11 @@ const _widgets = 'package:flutter/src/widgets/';
 const _rendering = 'package:flutter/src/rendering/';
 const _material = 'package:flutter/src/material/';
 const _cupertino = 'package:flutter/src/cupertino/';
+const _avio = 'package:avio_ui/';
+
+/// The SDK's dialog presenters, restricted to portal and system asks.
+const _askFunctions = {'showAvioAsk', 'showAvioDialog'};
+const _askTypes = {'AvioDialog', 'AvioDialogHost'};
 
 /// Icon fonts whose import alone is a breach.
 const _iconPackages = [
@@ -342,6 +360,14 @@ class _RuleVisitor extends RecursiveAstVisitor<void> {
     if (_is(type, _painting, 'Border') || _is(type, _painting, 'BorderSide')) {
       _flag(node, 'hairlines', call);
     }
+    if (_in(type, _avio) && _askTypes.contains(type.name)) {
+      _flag(node, 'asks', call);
+    }
+    if (_is(type, _widgets, 'RawDialogRoute')) _flag(node, 'asks', call);
+    if (_is(type, _avio, 'AvioToolbar') &&
+        _named(arguments).containsKey('actions')) {
+      _flag(node, 'actions', 'AvioToolbar(actions: …)');
+    }
     if (_is(type, _widgets, 'Image')) {
       final sized = isNamed
           ? _namesDecodeSize(arguments)
@@ -363,6 +389,11 @@ class _RuleVisitor extends RecursiveAstVisitor<void> {
     final call = '${method.name}(…)';
     if (_in(method, _material) || _in(method, _cupertino)) {
       _flag(node, 'controls', owner == null ? call : '${owner.name}.$call');
+    }
+    if ((_in(method, _avio) && _askFunctions.contains(method.name)) ||
+        (_in(owner, _avio) && (owner?.name ?? '').contains('AvioDialogHost')) ||
+        (_in(method, _widgets) && method.name == 'showGeneralDialog')) {
+      _flag(node, 'asks', owner == null ? call : '${owner.name}.$call');
     }
     if (_is(owner, _ui, 'Color')) {
       if (_alphaMethods.contains(method.name)) {
