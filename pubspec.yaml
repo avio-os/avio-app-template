@@ -13,9 +13,9 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # Avio design system. Pinned to a tag in CI; override locally via
-  # pubspec_overrides.yaml for cross-repo development (see
-  # pubspec_overrides.yaml.example).
+  # The Avio SDK: every package pinned to the same avio-sdk commit (move the
+  # three refs together). Override locally via pubspec_overrides.yaml for
+  # cross-repo development (see pubspec_overrides.yaml.example).
   avio_ui:
     git:
       url: https://github.com/avio-os/avio-sdk.git
@@ -25,6 +25,13 @@ dependencies:
     git:
       url: https://github.com/avio-os/avio-sdk.git
       path: packages/avio_system
+      ref: e5b00dfd0932621a5046a6fc39eb0cfb129af0a4
+  # Lets the compositor render the window's glass: Avio's window materials
+  # for an ordinary Flutter Linux runner (see lib/main.dart).
+  avio_materials:
+    git:
+      url: https://github.com/avio-os/avio-sdk.git
+      path: packages/avio_materials
       ref: e5b00dfd0932621a5046a6fc39eb0cfb129af0a4
 
   # State management and logging. Riverpod without code generation: write

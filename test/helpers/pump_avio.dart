@@ -1,9 +1,10 @@
 /// Shared widget-test harness: the desktop-pinned test declaration and the
-/// widget pump that mirrors the app's real ancestors.
+/// widget pump that mounts the app's real root.
 library;
 
+import 'package:avio_app_template/app.dart';
 import 'package:avio_ui/avio_ui.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Riverpod 3 keeps `Override` out of its main library; naming the type in a
 // signature needs this second import.
@@ -16,7 +17,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// Widget tests otherwise run as Android, and the two platforms disagree about
 /// scrolling: on mobile a vertical scroll view adopts the enclosing
 /// [PrimaryScrollController] automatically, on desktop it does not. A
-/// [Scrollbar] pointed at the primary controller therefore finds no attached
+/// `Scrollbar` pointed at the primary controller therefore finds no attached
 /// position and throws on desktop, while a full suite of Android-shaped tests
 /// stays green. Apps seeded from this template are desktop-only, so the tests
 /// should say so.
@@ -36,21 +37,22 @@ void avioWidgetTest(String description, WidgetTesterCallback callback) {
   );
 }
 
-/// Pumps [child] inside the app's sanctioned ancestors — the same stack
-/// `lib/src/app.dart` builds, minus the live appearance monitor — so widget
-/// tests exercise the context production renders with.
+/// Pumps [child] as the window content of the app's own root, [AppRoot] —
+/// the root `lib/app.dart` mounts, minus the live appearance monitor — so
+/// widget tests exercise the context production renders with.
 ///
-/// Pump this rather than a bare [MaterialApp]: every Avio component resolves
-/// its colors and spacing from an [AvioTokens] ancestor and throws without
-/// one. Pass [overrides] to inject fakes for whatever `main()` injects for
-/// real, and [brightness] to assert a screen in dark mode.
+/// Pump this rather than a bare `MaterialApp`: every Avio component resolves
+/// its colours, type and spacing from the [AvioRoot] inside [AppRoot] and
+/// throws without one. Pass [overrides] to inject fakes for whatever `main()`
+/// injects for real, and [appearance] to assert a screen in dark mode, high
+/// contrast or with bold text.
 ///
 /// Declare the test with [avioWidgetTest] so it runs as a desktop platform.
 Future<void> pumpAvio(
   WidgetTester tester,
   Widget child, {
   List<Override> overrides = const [],
-  Brightness brightness = Brightness.light,
+  AvioAppearance appearance = const AvioAppearance(),
   Size surfaceSize = const Size(1040, 700),
 }) async {
   await tester.binding.setSurfaceSize(surfaceSize);
@@ -61,20 +63,7 @@ Future<void> pumpAvio(
       // Mirrors `lib/main.dart`: no automatic provider retry, so a failing
       // provider surfaces its error here exactly as it would in the app.
       retry: (_, _) => null,
-      child: AvioTokens(
-        brightness: brightness,
-        child: AvioToastProvider(
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: AvioTheme.light,
-            darkTheme: AvioTheme.dark,
-            themeMode: brightness == Brightness.dark
-                ? ThemeMode.dark
-                : ThemeMode.light,
-            home: Material(type: MaterialType.transparency, child: child),
-          ),
-        ),
-      ),
+      child: AppRoot(appearance: appearance, home: child),
     ),
   );
   await tester.pump();

@@ -2,33 +2,25 @@ import 'dart:async';
 
 import 'package:avio_system/avio_system.dart';
 import 'package:avio_ui/avio_ui.dart';
-import 'package:flutter/material.dart'
-    show Brightness, Material, MaterialApp, MaterialType, ThemeMode;
+import 'package:flutter/material.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 
 import 'features/home/home_screen.dart';
 
-/// Root of the app — rename to `Avio<YourApp>App` after instantiating the
-/// template.
+/// The app — rename to `Avio<YourApp>App` after instantiating the template.
 ///
-/// This is the sanctioned Avio wrapper, in order:
-///
-/// 1. [AvioTokens] — every widget below reads colors, spacing, radius, motion
-///    and typography from `context.tokens`. Nothing hard-codes a value.
-/// 2. [AvioToastProvider] — above the app so toasts float over routes and
-///    dialogs rather than being covered by them.
-/// 3. [MaterialApp] with [AvioTheme.light] / [AvioTheme.dark] — carries the
-///    avio skin into the Material widgets the framework builds for you
-///    (text selection, scrollbars, dialogs) and loads the SDK's fonts.
-/// 4. A transparent [Material] — without a `Material` ancestor, `Text` renders
-///    with the framework's debug yellow underlines.
-///
-/// [AvioAppearanceMonitor] follows the desktop portal's dark/light and
-/// accent-color settings live. When no portal is reachable (plain `flutter run`
-/// on a bare session) it stays on the light default, so this is safe to keep.
+/// It follows the system appearance (light or dark and the Avio accent) over
+/// the desktop portal with `avio_system`'s [AvioAppearanceMonitor] and hands
+/// it to [AppRoot]. With no portal reachable the monitor stays on the light
+/// default, so this is safe under any compositor.
 class AvioTemplateApp extends StatefulWidget {
-  /// Creates the root widget.
-  const AvioTemplateApp({super.key});
+  /// Creates the app. [compositorMaterials] says whether the compositor
+  /// offers Avio's window materials (`lib/main.dart` asks it once, before the
+  /// first frame).
+  const AvioTemplateApp({super.key, this.compositorMaterials = false});
+
+  /// Whether the compositor renders the window's glass.
+  final bool compositorMaterials;
 
   @override
   State<AvioTemplateApp> createState() => _AvioTemplateAppState();
@@ -53,29 +45,67 @@ class _AvioTemplateAppState extends State<AvioTemplateApp> {
   Widget build(BuildContext context) {
     return ValueListenableBuilder<AvioSystemAppearance>(
       valueListenable: _appearance.notifier,
-      builder: (context, appearance, _) {
-        final isDark = appearance.brightness == Brightness.dark;
-        return AvioTokens(
-          brightness: appearance.brightness,
-          // Null accent means 'follow ink', which is the avio-skin default.
-          accentColor: appearance.accentColor,
-          // Above the MaterialApp, so toasts float over routes and dialogs
-          // instead of being covered by whatever the app pushes next.
-          child: AvioToastProvider(
-            child: MaterialApp(
-              title: 'Avio App Template',
-              debugShowCheckedModeBanner: false,
-              theme: AvioTheme.light,
-              darkTheme: AvioTheme.dark,
-              themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
-              home: const Material(
-                type: MaterialType.transparency,
-                child: HomeScreen(),
-              ),
-            ),
-          ),
-        );
-      },
+      builder: (context, system, _) => AppRoot(
+        appearance: AvioAppearance.fromSystem(system),
+        compositorMaterials: widget.compositorMaterials,
+        home: const HomeScreen(),
+      ),
     );
+  }
+}
+
+/// The sanctioned Avio root. The app and its widget tests both mount it, so
+/// tests render with exactly the ancestors production has.
+///
+/// From the outside in:
+///
+/// 1. [AvioCompositorMaterialHost.retained], when the compositor offers
+///    materials: the window's glass is then rendered by the compositor, in
+///    the same frame as the app's pixels. Without it the window paints its
+///    own material.
+/// 2. [MaterialApp] with the SDK's one theme factory, [AvioTheme.data], so
+///    the few Material pieces Flutter builds for you (text selection,
+///    scrollbars) wear the Avio skin.
+/// 3. [AvioRoot] in `builder`, above every route: it resolves the
+///    [AvioAppearance] into the tokens, the theme and the defaults plain
+///    widgets inherit (body text in ink-1 on Figtree, 16 px symbols), and
+///    applies the text scale and bold text exactly once.
+/// 4. [AvioToastProvider], so toasts float over routes and dialogs.
+/// 5. [AvioDesktopApplicationSurface] around [home]: the window's one
+///    chrome-tier material, where the compositor's window controls sit
+///    (`AvioWindowControlsInset`), blank-space window moves, and the host
+///    for in-window popups.
+class AppRoot extends StatelessWidget {
+  /// Creates the root for [appearance] around [home].
+  const AppRoot({
+    required this.appearance,
+    required this.home,
+    super.key,
+    this.compositorMaterials = false,
+  });
+
+  /// The appearance to resolve.
+  final AvioAppearance appearance;
+
+  /// The window's content.
+  final Widget home;
+
+  /// Whether the compositor renders the window's glass.
+  final bool compositorMaterials;
+
+  @override
+  Widget build(BuildContext context) {
+    final app = MaterialApp(
+      title: 'Avio App Template',
+      debugShowCheckedModeBanner: false,
+      theme: AvioTheme.data(appearance.colors),
+      builder: (context, child) => AvioRoot(
+        appearance: appearance,
+        child: AvioToastProvider(child: child!),
+      ),
+      home: AvioDesktopApplicationSurface(child: home),
+    );
+    if (!compositorMaterials) return app;
+    return AvioCompositorMaterialHost.retained(child: app);
   }
 }
