@@ -49,8 +49,14 @@ dev_dependencies:
   # needs a code generator, so there is no build_runner step in this template.
   riverpod_lint: ^3.0.0
   custom_lint: ^0.8.0
+  # Parses lib/ for the Avio design rules (test/design_rules_test.dart).
+  analyzer: ^8.4.0
 
 flutter:
+  # Avio apps draw Avio Symbols (AvioIcon), never Material icons (the design
+  # rules test bans them). avio_ui still declares the Material font, and
+  # Flutter warns on every build when the app disagrees; release builds
+  # tree-shake the unused glyphs away.
   uses-material-design: true
   assets:
     # Flutter fails the build when a declared asset directory is missing, and
