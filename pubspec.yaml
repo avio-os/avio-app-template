@@ -20,19 +20,19 @@ dependencies:
     git:
       url: https://github.com/avio-os/avio-sdk.git
       path: packages/avio_ui
-      ref: e07b7fd2dbd5dce02fcbc0fc5b1ed6e4f9a1f662
+      ref: 0c74322ee105185be3d4ac49368fe5bda8f15828
   avio_system:
     git:
       url: https://github.com/avio-os/avio-sdk.git
       path: packages/avio_system
-      ref: e07b7fd2dbd5dce02fcbc0fc5b1ed6e4f9a1f662
+      ref: 0c74322ee105185be3d4ac49368fe5bda8f15828
   # Lets the compositor render the window's glass: Avio's window materials
   # for an ordinary Flutter Linux runner (see lib/main.dart).
   avio_materials:
     git:
       url: https://github.com/avio-os/avio-sdk.git
       path: packages/avio_materials
-      ref: e07b7fd2dbd5dce02fcbc0fc5b1ed6e4f9a1f662
+      ref: 0c74322ee105185be3d4ac49368fe5bda8f15828
 
   # State management and logging. Riverpod without code generation: write
   # providers by hand, keep their imports in `*_provider.dart` files, and write
